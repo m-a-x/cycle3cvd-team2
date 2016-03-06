@@ -1,6 +1,6 @@
 # Project CatsDogs: Predictive analytics-model evaluation and selection
 
-#### - for cats versus dogs image data
+#### - for cats versus dogs image data  
 
 Read [full project description](doc/project3_desc.md)
 
