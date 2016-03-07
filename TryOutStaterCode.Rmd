@@ -1,0 +1,13 @@
+---
+title: "Project3"
+author: "Yanyu Zheng yz2690"
+date: "February 27, 2016"
+output: html_document
+---
+
+```{r}
+source("http://bioconductor.org/biocLite.R")
+biocLite()
+biocLite("EBImage")
+```
+
