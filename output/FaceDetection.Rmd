@@ -5,10 +5,10 @@ date: "March 6, 2016"
 output: html_document
 ---
 
-# Data Cleaning
+# Get names
 ```{r}
-setwd("~/Data Science/Project3/cycle3cvd-team2")
-dir_images = "../data_train"
+setwd("~/Data Science/Project3/cycle3cvd-team2/data")
+dir_images = "../../data_train"
 dir_names <- list.files(dir_images)
 
 breed_name <- rep(NA, length(dir_names))
@@ -23,24 +23,14 @@ iscat <- breed_name %in% cat_breed
 y_cat <- as.numeric(iscat)
 ```
 
-# Get the Face
+# Get the face
 ```{r}
-source("http://bioconductor.org/biocLite.R")
-biocLite("EBImage")
-lib = c("EBImage", "XML")
+lib = c("EBImage", "XML","dplyr")
 lapply(lib, library, character.only = TRUE)
-dir_XML = "../annotations/xmls"
+dir_XML = "../../annotations/xmls"
 dir_ann = list.files(dir_XML)
 dir_names = lapply(dir_ann, gsub, pattern = ".xml", replacement = "")
-
-play = dir_ann[1:10]
-play = lapply(play, gsub, pattern = ".xml", replacement = "")
-fun = lapply(play,getFace,xmlDir = "../annotations/xmls",picDir = "../images")
-
-fun = apply(play,1,getFace,xmlDir = "../annotations/xmls",picDir = "../images")
-ann = xmlParse("../annotations/xmls/wheaten_terrier_18.xml")
-#print(ann)
-head_box <- xmlToDataFrame(ann,nodes=getNodeSet(ann,"//annotation/object/bndbox"))
-head_box
+faces = lapply(dir_names,getFace,xmlDir = "../../annotations/xmls",picDir = "../../images")
+save(faces, file = "faces.RData")
 ```
 
