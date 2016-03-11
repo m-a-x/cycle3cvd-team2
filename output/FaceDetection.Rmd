@@ -30,6 +30,7 @@ lapply(lib, library, character.only = TRUE)
 dir_XML = "../../annotations/xmls"
 dir_ann = list.files(dir_XML)
 dir_names = lapply(dir_ann, gsub, pattern = ".xml", replacement = "")
+# dir_names = head(dir_names)
 faces = lapply(dir_names,getFace,xmlDir = "../../annotations/xmls",picDir = "../../images")
 save(faces, file = "faces.RData")
 ```
