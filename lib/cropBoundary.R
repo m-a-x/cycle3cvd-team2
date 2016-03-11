@@ -13,7 +13,5 @@ cropBoundary = function(imageData,step,thresholdSize,thresholdC) {
     In = apply(In, 2, mean)
     C = lm(Out~In)$coefficients[2]
   }
-  print(C)
-  print(Ind)
-  return(imageData[-(1:Ind),])
+  return(Ind)
 }

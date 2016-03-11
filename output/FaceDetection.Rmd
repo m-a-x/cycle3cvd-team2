@@ -31,7 +31,14 @@ dir_XML = "../../annotations/xmls"
 dir_ann = list.files(dir_XML)
 dir_names = lapply(dir_ann, gsub, pattern = ".xml", replacement = "")
 # dir_names = head(dir_names)
-faces = lapply(dir_names,getFace,xmlDir = "../../annotations/xmls",picDir = "../../images")
+lapply(dir_names,getFace,xmlDir = "../../annotations/xmls",picDir = "../../images",saveDir = "../../Faces")
 save(faces, file = "faces.RData")
+```
+
+# Crop background
+```{r}
+names = sample(dir_names,100)
+pics = lapply(names, readIn, picDir = "../../images")
+lapply(pics, cropBack,step=2,thresholdRatio=0.4,thresholdC=0.95)
 ```
 
