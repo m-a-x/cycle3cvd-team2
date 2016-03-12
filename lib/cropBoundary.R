@@ -5,13 +5,27 @@ cropBoundary = function(imageData,step,thresholdSize,thresholdC) {
   In = imageData[Ind:(Ind+step-1),]
   In = apply(In, 2, mean)
   C = lm(Out~In)$coefficients[2]
+#   v = quantile((Out - In),c(0.1, 0.9))
+#   C = abs(v[2]-v[1])/sd(Out - In)
   while(Ind < thresholdSize && C > thresholdC){
-    #print("p")
     Ind = Ind + step
     Out = In
     In = imageData[Ind:(Ind+step-1),]
     In = apply(In, 2, mean)
+#     v = quantile((Out - In),c(0.1, 0.9))
+#     C = abs(v[2]-v[1])/sd(Out - In)
     C = lm(Out~In)$coefficients[2]
+  }
+  C = 1
+  if(Ind < 5){
+    while(Ind < thresholdSize && C < 2.5){
+      Ind = Ind + step
+      Out = In
+      In = imageData[Ind:(Ind+step-1),]
+      In = apply(In, 2, mean)
+      v = quantile((Out - In),c(0.1, 0.9))
+      C = abs(v[2]-v[1])/sd(Out - In)
+    }
   }
   return(Ind)
 }
