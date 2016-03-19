@@ -5,18 +5,13 @@ date: "March 6, 2016"
 output: html_document
 ---
 
-# Get names
+# Get class
 ```{r}
 setwd("~/Data Science/Project3/cycle3cvd-team2/data")
 dir_images = "../../data_train"
 dir_names <- list.files(dir_images)
 
-breed_name <- rep(NA, length(dir_names))
-for(i in 1:length(dir_names)){
-  tt <- unlist(strsplit(dir_names[i], "_"))
-  tt <- tt[-length(tt)]
-  breed_name[i] = paste(tt, collapse="_", sep="")
-}
+breed_name = sapply(dir_names,gsub,pattern = "\\_[0-9].*",replacement = "")
 cat_breed <- c("Abyssinian", "Bengal", "Birman", "Bombay", "British_Shorthair", "Egyptian_Mau","Maine_Coon", "Persian", "Ragdoll", "Russian_Blue", "Siamese", "Sphynx")
 
 iscat <- breed_name %in% cat_breed
@@ -32,7 +27,7 @@ dir_ann = list.files(dir_XML)
 dir_names = lapply(dir_ann, gsub, pattern = ".xml", replacement = "")
 # dir_names = head(dir_names)
 lapply(dir_names,getFace,xmlDir = "../../annotations/xmls",picDir = "../../images",saveDir = "../../Faces")
-save(faces, file = "faces.RData")
+
 ```
 
 # Crop background
