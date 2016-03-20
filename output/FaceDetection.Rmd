@@ -4,10 +4,15 @@ author: "Yanyu Zheng yz2690"
 date: "March 6, 2016"
 output: html_document
 ---
+# Basic setup
+```{r}
+setwd("~/Data Science/Project3/cycle3cvd-team2/data")
+lib = c("EBImage", "XML","dplyr")
+lapply(lib, library, character.only = TRUE)
+```
 
 # Get class
 ```{r}
-setwd("~/Data Science/Project3/cycle3cvd-team2/data")
 dir_images = "../../data_train"
 dir_names <- list.files(dir_images)
 
@@ -20,14 +25,11 @@ y_cat <- as.numeric(iscat)
 
 # Get the face
 ```{r}
-lib = c("EBImage", "XML","dplyr")
-lapply(lib, library, character.only = TRUE)
 dir_XML = "../../annotations/xmls"
 dir_ann = list.files(dir_XML)
 dir_names = lapply(dir_ann, gsub, pattern = ".xml", replacement = "")
 # dir_names = head(dir_names)
-lapply(dir_names,getFace,xmlDir = "../../annotations/xmls",picDir = "../../images",saveDir = "../../Faces")
-
+lapply(dir_names,getFace,xmlDir = "../../annotations/xmls",picDir = "../../images",CatDir = "../../Faces/Cat",DogDir = "../../Faces/Dog")
 ```
 
 # Crop background
@@ -35,5 +37,12 @@ lapply(dir_names,getFace,xmlDir = "../../annotations/xmls",picDir = "../../image
 names = sample(dir_names,100)
 pics = lapply(names, readIn, picDir = "../../images")
 lapply(pics, cropBack,step=2,thresholdRatio=0.35,thresholdC=0.95)
+```
+
+# Find cat face
+```{r}
+rescale = (S-mean(S))*2
+do.call(sum)
+
 ```
 
