@@ -41,6 +41,16 @@ lapply(pics, cropBack,step=2,thresholdRatio=0.35,thresholdC=0.95)
 
 # Find cat face
 ```{r}
+dirFaces = "../../faces/cat"
+dirFaceNames = list.files(dir_faces)
+breedName = sapply(dirFaceNames,gsub,pattern = "\\_[0-9].*",replacement = "")
+breedList <- vector("list", length(cat_breed))
+names(breedList) <- cat_breed
+for (i in 1:length(cat_breed)){
+  breedList[[cat_breed[i]]] = dirFaceNames[breedName == cat_breed[[i]]]
+}
+abyssinian = breedList[[1]]
+headList = lapply(abyssinian, readInHead, picDir = "../../Faces/Cat")
 rescale = (S-mean(S))*2
 do.call(sum)
 
