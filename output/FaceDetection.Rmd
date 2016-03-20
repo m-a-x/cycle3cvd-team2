@@ -49,8 +49,17 @@ names(breedList) <- cat_breed
 for (i in 1:length(cat_breed)){
   breedList[[cat_breed[i]]] = dirFaceNames[breedName == cat_breed[[i]]]
 }
-abyssinian = breedList[[1]]
-headList = lapply(abyssinian, readInHead, picDir = "../../Faces/Cat")
+
+abyssinian = breedList[[1]] %>%
+  lapply(FUN = readInHead, picDir = "../../Faces/Cat")%>%
+  lapply(FUN = rescale, size = 60, ratio = 0.9)
+
+abyssinian = abyssinian[!(sapply(abyssinian,is.null))]
+
+play = meanFace(abyssinian,5)
+#play = ifelse(play>median(play),0,1)
+display(play)
+
 rescale = (S-mean(S))*2
 do.call(sum)
 
