@@ -46,20 +46,23 @@ dirDogFaces = "../../faces/dog"
 catNames = list.files(dirCatFaces)
 dogNames = list.files(dirDogFaces)
 catPatchs = catNames %>%
-  sample(size = 1000) %>%
+  sample(size = 200) %>%
   standardFace(picDir = dirCatFaces) %>%
   lapply(abstractPatch, xmin = 0, ymin = 0, xmax = 30, ymax = 30)
+print("patch finished")
 
-catTestList = sample(catNames,1000)
+catTestList = sample(catNames,500)
 catTestPic = lapply(catTestList,FUN = readInHead, picDir = dirCatFaces)
 catScores = t(sapply(catTestPic,FUN = scorePatchList,patchList = catPatchs))
+print("cat score finished")
 
-dogTestList = sample(dogNames,1000)
+dogTestList = sample(dogNames,500)
 dogTestPic = lapply(dogTestList,FUN = readInHead, picDir = dirDogFaces)
 dogScores = t(sapply(dogTestPic,FUN = scorePatchList,patchList = catPatchs))
+print("dogscore finished")
 
 scores = rbind(catScores,dogScores)
-dataTest = data.frame(group = as.factor(rep(c(0,1),each = 1000)),scores)
+dataTest = data.frame(group = as.factor(rep(c(0,1),each = 500)),scores)
 
 play = bagging(group~., dataTest)
 ```

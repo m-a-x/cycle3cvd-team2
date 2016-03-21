@@ -10,8 +10,6 @@ scorePatch = function(pic,patch){
 #   ymin = 0
 #   xmax = 30
 #   ymax = 30
-  print(xmin)
-  print("hi")
   score = sum(pic[xmin:xmax,ymin:ymax]*pat)
   return(score)
 }
