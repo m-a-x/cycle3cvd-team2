@@ -7,7 +7,7 @@ output: html_document
 # Basic setup
 ```{r}
 setwd("~/Data Science/Project3/cycle3cvd-team2/data")
-lib = c("EBImage", "XML","dplyr")
+lib = c("EBImage", "XML","dplyr","adabag")
 lapply(lib, library, character.only = TRUE)
 ```
 
@@ -41,28 +41,47 @@ lapply(pics, cropBack,step=2,thresholdRatio=0.35,thresholdC=0.95)
 
 # Find cat face
 ```{r}
-dirFaces = "../../faces/cat"
-dirFaceNames = list.files(dir_faces)
-breedName = sapply(dirFaceNames,gsub,pattern = "\\_[0-9].*",replacement = "")
-breedList <- vector("list", length(cat_breed))
-names(breedList) <- cat_breed
-for (i in 1:length(cat_breed)){
-  breedList[[cat_breed[i]]] = dirFaceNames[breedName == cat_breed[[i]]]
-}
+dirCatFaces = "../../faces/cat"
+dirDogFaces = "../../faces/dog"
+catNames = list.files(dirCatFaces)
+dogNames = list.files(dirDogFaces)
+catPatchs = catNames %>%
+  sample(size = 1000) %>%
+  standardFace(picDir = dirCatFaces) %>%
+  lapply(abstractPatch, xmin = 0, ymin = 0, xmax = 30, ymax = 30)
 
-abyssinian = breedList[[1]] %>%
-  lapply(FUN = readInHead, picDir = "../../Faces/Cat")%>%
-  lapply(FUN = rescale, size = 60, ratio = 0.9)
+catTestList = sample(catNames,1000)
+catTestPic = lapply(catTestList,FUN = readInHead, picDir = dirCatFaces)
+catScores = t(sapply(catTestPic,FUN = scorePatchList,patchList = catPatchs))
 
-abyssinian = abyssinian[!(sapply(abyssinian,is.null))]
+dogTestList = sample(dogNames,1000)
+dogTestPic = lapply(dogTestList,FUN = readInHead, picDir = dirDogFaces)
+dogScores = t(sapply(dogTestPic,FUN = scorePatchList,patchList = catPatchs))
 
+scores = rbind(catScores,dogScores)
+dataTest = data.frame(group = as.factor(rep(c(0,1),each = 1000)),scores)
+
+play = bagging(group~., dataTest)
+```
+
+# Waste Codes
+```{r}
+###########
+##breedList
+###########
+# breedName = sapply(dirFaceNames,gsub,pattern = "\\_[0-9].*",replacement = "")
+# breedList <- vector("list", length(cat_breed))
+# names(breedList) <- cat_breed
+# for (i in 1:length(cat_breed)){
+#   breedList[[cat_breed[i]]] = dirFaceNames[breedName == cat_breed[[i]]]
+# }
+
+###########
+##meanface
+###########
 # play = meanFace(abyssinian,5)
 # play = ifelse(abyssinian[[1]]>median(abyssinian[[1]]),0,1)
 # #play = ifelse(play>median(play),0,1)
 # display(play)
-
-y = rep(c(0,1),each = 65)
-play = lapply(abyssinian,abstractPatch, xmin = 0, ymin = 0, xmax = 30, ymax = 30)
-
 ```
 

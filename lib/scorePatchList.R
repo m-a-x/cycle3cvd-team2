@@ -1,3 +1,3 @@
 scorePatchList = function(pic,patchList){
-  return(sapply(patchList, pic = pic))
+  return(sapply(patchList, scorePatch, pic = pic))
 }
