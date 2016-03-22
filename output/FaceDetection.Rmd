@@ -9,6 +9,9 @@ output: html_document
 setwd("~/Data Science/Project3/cycle3cvd-team2/data")
 lib = c("EBImage", "XML","dplyr","adabag")
 lapply(lib, library, character.only = TRUE)
+func = c("abstracPatch.R",	"findPatch.R",	"scorePatch.R", "cropBack.R",	"getFace.R",		"scorePatchList.R",	"meanFace.R",		"standardFace.R", "cropBoundary.R",	"readIn.R", "readInHead.R","rescale.R") 
+func = paste("../lib/",func,sep="") 
+lapply(func, source)
 ```
 
 # Get class
@@ -41,28 +44,40 @@ lapply(pics, cropBack,step=2,thresholdRatio=0.35,thresholdC=0.95)
 
 # Find cat face
 ```{r}
+## Pick up all train heads
 dirCatFaces = "../../faces/cat"
 dirDogFaces = "../../faces/dog"
 catNames = list.files(dirCatFaces)
+isTrain = catNames %in% dir_names
+catNames = catNames[isTrain]
 dogNames = list.files(dirDogFaces)
-catPatchs = catNames %>%
-  sample(size = 200) %>%
-  standardFace(picDir = dirCatFaces) %>%
+isTrain = dogNames %in% dir_names
+dogNames = dogNames[isTrain]
+## Standard cat face for patches
+catSFace = catNames %>%
+  standardFace(picDir = dirCatFaces,discard = TRUE) 
+## Pick up patches
+patch1 = catSFace%>%
   lapply(abstractPatch, xmin = 0, ymin = 0, xmax = 30, ymax = 30)
-print("patch finished")
+patch2 = catSFace%>%
+  lapply(abstractPatch, xmin = 70, ymin = 70, xmax = 100, ymax = 100)
+patch3 = catSFace%>%
+  lapply(abstractPatch, xmin = 40, ymin = 20, xmax = 60, ymax = 80)
+catPatchs = c(patch1,patch2,patch3)
+#print("patch finished")
 
-catTestList = sample(catNames,500)
-catTestPic = lapply(catTestList,FUN = readInHead, picDir = dirCatFaces)
+catTestList = catNames
+catTestPic = standardFace(catTestList,picDir = dirCatFaces,discard = FALSE)
 catScores = t(sapply(catTestPic,FUN = scorePatchList,patchList = catPatchs))
 print("cat score finished")
 
-dogTestList = sample(dogNames,500)
-dogTestPic = lapply(dogTestList,FUN = readInHead, picDir = dirDogFaces)
+dogTestList = sample(dogNames,length(catTestPic))
+dogTestPic = standardFace(dogTestList,picDir = dirDogFaces,discard = FALSE)
 dogScores = t(sapply(dogTestPic,FUN = scorePatchList,patchList = catPatchs))
 print("dogscore finished")
 
 scores = rbind(catScores,dogScores)
-dataTest = data.frame(group = as.factor(rep(c(0,1),each = 500)),scores)
+dataTest = data.frame(group = as.factor(rep(c(0,1),each = length(catTestPic))),scores)
 
 play = bagging(group~., dataTest)
 ```

@@ -1,6 +1,8 @@
 scorePatch = function(pic,patch){
   mat = patch[[2]]
   pat = patch[[1]]
+  #print(mat)
+  #print(dim(pic))
   xmin = mat[1,1]
   ymin = mat[2,1]
   xmax = mat[1,2]
