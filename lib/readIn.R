@@ -1,8 +1,7 @@
 readIn = function(name, picDir) {
-  pic = paste(paste(picDir,name,sep = "/"), "jpg", sep = ".")
+  pic = paste(picDir,name,sep = "/")
   img = pic %>%
     readImage() %>%
-    channel(mode = 'gray') %>%
-    imageData()
+    channel(mode = 'gray') 
   return(list(img,name))
 }

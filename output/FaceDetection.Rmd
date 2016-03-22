@@ -42,7 +42,7 @@ pics = lapply(names, readIn, picDir = "../../images")
 lapply(pics, cropBack,step=2,thresholdRatio=0.35,thresholdC=0.95)
 ```
 
-# Find cat face
+# Find features
 ```{r}
 ## Pick up all train heads
 dirCatFaces = "../../faces/cat"
@@ -64,22 +64,41 @@ patch2 = catSFace%>%
 patch3 = catSFace%>%
   lapply(abstractPatch, xmin = 40, ymin = 20, xmax = 60, ymax = 80)
 catPatchs = c(patch1,patch2,patch3)
+catPatchs = patch1
 #print("patch finished")
 
-catTestList = catNames
+catTestList = sample(catNames,100)
 catTestPic = standardFace(catTestList,picDir = dirCatFaces,discard = FALSE)
 catScores = t(sapply(catTestPic,FUN = scorePatchList,patchList = catPatchs))
 print("cat score finished")
 
 dogTestList = sample(dogNames,length(catTestPic))
-dogTestPic = standardFace(dogTestList,picDir = dirDogFaces,discard = FALSE)
+dogTestPic = standardFace(dogTestList,picDir =  dirDogFaces,discard = FALSE)
 dogScores = t(sapply(dogTestPic,FUN = scorePatchList,patchList = catPatchs))
 print("dogscore finished")
 
-scores = rbind(catScores,dogScores)
+backTestList = sample(dir_names,length(catTestPic))
+backTestPic = lapply(backTestList,randomBack,picDir = dir_images) 
+backScores = t(sapply(backTestPic,FUN = scorePatchList,patchList = catPatchs))
+
+scores = rbind(catScores,backScores)
 dataTest = data.frame(group = as.factor(rep(c(0,1),each = length(catTestPic))),scores)
 
 play = bagging(group~., dataTest)
+```
+
+# Find face
+```{r}
+patchUsed = c(301, 337, 65)
+playPatchs = makePatchList(catPatchs,scores,patchUsed)
+playPatchs = catPatchs[patchUsed]
+playPatchs = lapply(playPatchs,FUN = addLimit, scores = scores, patchUsed = patchUsed)
+
+picPlay = sample(catNames,1)%>%
+  readIn(picDir = dir_images)
+  
+findFace(picPlay,playPatchs,"../")
+ 
 ```
 
 # Waste Codes
