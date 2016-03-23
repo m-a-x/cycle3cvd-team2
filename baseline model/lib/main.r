@@ -1,6 +1,7 @@
 # install library
 library("dplyr")
 library("EBImage")
+library("e1071")
 # specify library 
 setwd("~/Desktop/ADS_Projetct3")
 
@@ -19,25 +20,11 @@ for(i in 1:length(dir_names)){
         }
 }
 
-# get the label
-dir_names <- list.files(dir_images)
-breed_name <- rep(NA, length(dir_names))
-for(i in 1:length(dir_names)){
-        tt <- unlist(strsplit(dir_names[i], "_"))
-        tt <- tt[-length(tt)]
-        breed_name[i] = paste(tt, collapse="_", sep="")
-}
-cat_breed <- c("Abyssinian", "Bengal", "Birman", "Bombay", "British_Shorthair", "Egyptian_Mau",
-               "Maine_Coon", "Persian", "Ragdoll", "Russian_Blue", "Siamese", "Sphynx")
 
-iscat <- breed_name %in% cat_breed
-y_cat <- as.numeric(iscat)
 
 # create a training set and test set 
 set.seed(666)
-index = sample(7390,1390)
-label_train = y_cat[-index]
-label_test = y_cat[index]
+index = sample(7377,1377)
 
 current_folder = "/Users/Arsenal4ever/Desktop/ADS_Projetct3/data/images"
 train.folder = "/Users/Arsenal4ever/Desktop/ADS_Projetct3/data/data_train"
@@ -64,4 +51,36 @@ image_test_lib = "./data/data_test/"
 # construct feature 
 source("./lib/feature.r")
 train_feature = feature(image_train_lib,train_index,"train")
-train_feature = feature(image_test_lib,test_index,"test")
+test_feature = feature(image_test_lib,test_index,"test")
+
+# get the label
+# train label
+breed_name_train <- rep(NA, length(train_index))
+for(i in 1:length(train_index)){
+        tt <- unlist(strsplit(train_index[i], "_"))
+        tt <- tt[-length(tt)]
+        breed_name_train[i] = paste(tt, collapse="_", sep="")
+}
+cat_breed <- c("Abyssinian", "Bengal", "Birman", "Bombay", "British_Shorthair", "Egyptian_Mau",
+               "Maine_Coon", "Persian", "Ragdoll", "Russian_Blue", "Siamese", "Sphynx")
+
+iscat <- breed_name_train %in% cat_breed
+label_train <- as.numeric(iscat)
+save(label_train, file=paste0("./output/", "label_train", ".RData"))
+
+# test label
+breed_name_test <- rep(NA, length(test_index))
+for(i in 1:length(test_index)){
+        tt <- unlist(strsplit(test_index[i], "_"))
+        tt <- tt[-length(tt)]
+        breed_name_test[i] = paste(tt, collapse="_", sep="")
+}
+
+iscat <- breed_name_test %in% cat_breed
+label_test <- as.numeric(iscat)
+save(label_test, file=paste0("./output/", "label_test", ".RData"))
+
+# result
+svm_RBF = svm(train_feature,label_train,type = "C-classification",kernel = "radial",cost = 0.27,gamma = 0.001)
+predict = predict(svm_RBF,test_feature)
+error = sum(predict != label_test)/1377
