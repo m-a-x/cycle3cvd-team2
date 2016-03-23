@@ -9,16 +9,15 @@ output: html_document
 setwd("~/Data Science/Project3/cycle3cvd-team2/data")
 lib = c("EBImage", "XML","dplyr","adabag")
 lapply(lib, library, character.only = TRUE)
-func = c("abstracPatch.R",	"findPatch.R",	"scorePatch.R", "cropBack.R",	"getFace.R",		"scorePatchList.R",	"meanFace.R",		"standardFace.R", "cropBoundary.R",	"readIn.R", "readInHead.R","rescale.R") 
+func = c("abstracPatch.R",	"findPatch.R",	"scorePatch.R", "cropBack.R",	"getFace.R",		"scorePatchList.R",	"meanFace.R",		"standardFace.R", "cropBoundary.R",	"readIn.R", "readInHead.R","rescale.R","findFace.R","testFace.R","randomBack.R", "makePatchList.R") 
 func = paste("../lib/",func,sep="") 
 lapply(func, source)
+dir_images = "../../data_train"
+dir_names <- list.files(dir_images)
 ```
 
 # Get class
 ```{r}
-dir_images = "../../data_train"
-dir_names <- list.files(dir_images)
-
 breed_name = sapply(dir_names,gsub,pattern = "\\_[0-9].*",replacement = "")
 cat_breed <- c("Abyssinian", "Bengal", "Birman", "Bombay", "British_Shorthair", "Egyptian_Mau","Maine_Coon", "Persian", "Ragdoll", "Russian_Blue", "Siamese", "Sphynx")
 
@@ -39,7 +38,7 @@ lapply(dir_names,getFace,xmlDir = "../../annotations/xmls",picDir = "../../image
 ```{r}
 names = sample(dir_names,100)
 pics = lapply(names, readIn, picDir = "../../images")
-lapply(pics, cropBack,step=2,thresholdRatio=0.35,thresholdC=0.95)
+boundary = sapply(pics, cropBack,step=2,thresholdRatio=0.35,thresholdC=0.95)
 ```
 
 # Find features
@@ -57,14 +56,15 @@ dogNames = dogNames[isTrain]
 catSFace = catNames %>%
   standardFace(picDir = dirCatFaces,discard = TRUE) 
 ## Pick up patches
-patch1 = catSFace%>%
+patch = vector("list",length = 3)
+patch[[1]] = catSFace%>%
   lapply(abstractPatch, xmin = 0, ymin = 0, xmax = 30, ymax = 30)
-patch2 = catSFace%>%
+patch[[2]] = catSFace%>%
   lapply(abstractPatch, xmin = 70, ymin = 70, xmax = 100, ymax = 100)
-patch3 = catSFace%>%
-  lapply(abstractPatch, xmin = 40, ymin = 20, xmax = 60, ymax = 80)
+patch[[3]] = catSFace%>%
+  lapply(abstractPatch, xmin = 20, ymin = 40, xmax = 80, ymax = 60)
 catPatchs = c(patch1,patch2,patch3)
-catPatchs = patch1
+catPatchs = patch3
 #print("patch finished")
 
 catTestList = sample(catNames,100)
@@ -84,15 +84,26 @@ backScores = t(sapply(backTestPic,FUN = scorePatchList,patchList = catPatchs))
 scores = rbind(catScores,backScores)
 dataTest = data.frame(group = as.factor(rep(c(0,1),each = length(catTestPic))),scores)
 
-play = bagging(group~., dataTest)
+play = bagging(group~., dataTest,mfinal=30)
+
+importanceplot(play)
+plot(sort(play$importance,TRUE)[1:50])
+sort(play$importance,TRUE)[1:2]
+plot(scores[,243])
+display(catPatchs[[243]][[1]])
+display(catPatchs[[271]][[1]])
+
+patchUsed1 = c(301, 337, 65)
+playPatchs1 = makePatchList(patch1,scores[1],patchUsed1)
+patchUsed2 = c(598,57)
+playPatchs2 = makePatchList(patch2,scores[2],patchUsed2)
+patchUsed3 = c(243,271)
+playPatchs3 = makePatchList(patch3,scores[3],patchUsed3)
 ```
 
 # Find face
 ```{r}
-patchUsed = c(301, 337, 65)
-playPatchs = makePatchList(catPatchs,scores,patchUsed)
-playPatchs = catPatchs[patchUsed]
-playPatchs = lapply(playPatchs,FUN = addLimit, scores = scores, patchUsed = patchUsed)
+playPatchs = c(playPatchs1,playPatchs2,playPatchs3)
 
 picPlay = sample(catNames,1)%>%
   readIn(picDir = dir_images)

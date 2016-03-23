@@ -9,7 +9,7 @@ testFace = function(grid,patchScoreList){
     if(sScore>p[[3]]){
       score = score+1
     }
-    if(score>1){
+    if(score>2){
       return(FALSE)
     }
   }

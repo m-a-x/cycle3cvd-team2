@@ -1,0 +1,7 @@
+setwd("~/Data Science/Project3/cycle3cvd-team2/data")
+lib = c("EBImage", "XML","dplyr","adabag")
+lapply(lib, library, character.only = TRUE)
+func = c("cropBack.R", "cropBoundary.R") 
+func = paste("../lib/",func,sep="") 
+lapply(func, source)
+cropBack(test,step = 2,thresholdRatio = 0.35,thresholdC = 0.95)
