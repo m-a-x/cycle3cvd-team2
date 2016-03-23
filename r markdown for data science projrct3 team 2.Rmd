@@ -1,0 +1,156 @@
+---
+title: "Applied Data Science Projects 3 (Team 2)"
+author:
+- Shi, Yuchen
+- Mattioli, Max William
+- Zheng, Yanyu
+- Ding, Tianhong
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({ TeX: { equationNumbers: {autoNumber: "all"} } });
+</script>
+  
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy = FALSE)
+knitr::opts_chunk$set(cache=TRUE)
+# install library
+library("dplyr")
+library("EBImage")
+library("e1071")
+# specify library 
+setwd("~/Desktop/ADS_Projetct3")
+set.seed(142857)  
+
+```
+
+# 1 - Baseline  Model
+
+First of all, we need to extract the class label, and then delete the images which are not in JPEG format.
+
+```{r ,include=FALSE}
+# extract class label
+dir_images <- "./data/images"
+dir_names <- list.files(dir_images)
+
+## delete all the data like .mat
+for(i in 1:length(dir_names)){
+        tt <- unlist(strsplit(dir_names[i], "_"))
+        if (unlist(strsplit(tt[length(tt)],"[.]"))[2] == "mat"){
+                
+                file.remove(paste("./data/images","/",dir_names[i],sep = ""))
+                #tt <- tt[-length(tt)]
+                #breed_name[i] = paste(tt, collapse="_", sep="")
+        }
+}
+
+```  
+
+
+```{r}
+# create a training set and test set 
+set.seed(666)
+index = sample(7377,1377)
+
+current_folder = "/Users/Arsenal4ever/Desktop/ADS_Projetct3/data/images"
+train.folder = "/Users/Arsenal4ever/Desktop/ADS_Projetct3/data/data_train"
+test.folder = "/Users/Arsenal4ever/Desktop/ADS_Projetct3/data/data_test"
+
+train_index = dir_names[-index]
+test_index = dir_names[index]
+
+# create training folder
+for (i in 1:length(train_index)){
+        train_list = paste(current_folder,"/",train_index[i],sep = "")
+        file.copy(from=train_list, to=train.folder)
+}
+# create test folder
+for (i in 1:length(test_index)){
+        test_list = paste(current_folder,"/",test_index[i],sep = "")
+        file.copy(from=test_list, to=test.folder)
+}
+
+# create lib for training and testing 
+image_train_lib = "./data/data_train/"
+image_test_lib = "./data/data_test/"
+
+``` 
+
+After setiing the training set and test set, we can use feature function to extract feactures of iamges in the training folder and test folder.
+
+```{r}
+# construct feature 
+source("./lib/feature.r")
+train_feature = feature(image_train_lib,train_index,"train")
+test_feature = feature(image_test_lib,test_index,"test")
+``` 
+
+In the feature function, we get the RGB features from each image, and then put it into a matrix.
+
+```{r}
+feature <- function(img_dir, img_name, data_name=NULL){
+        
+        ### Construct process features for training/testing images
+        ### Sample simple feature: Extract raw pixel values os features
+        
+        ### Input: a directory that contains images ready for processing
+        ### Output: an .RData file contains processed features for the images
+        
+        ### load libraries
+        library("EBImage")
+        
+        n_files <- length(img_name)
+        nR <- 10
+        nG <- 8
+        nB <- 10
+        rBin <- seq(0, 1, length.out=nR)
+        gBin <- seq(0, 1, length.out=nG)
+        bBin <- seq(0, 1, length.out=nB)
+        ### store vectorized pixel values of images
+        dat <- array(dim=c(n_files, nR*nG*nB)) 
+        for(i in 1:n_files){
+                img <- readImage(paste(img_dir, img_name[i],sep=""))
+                mat <- imageData(img)
+                freq_rgb <- as.data.frame(table(factor(findInterval(mat[,,1], rBin), levels=1:nR), 
+                                                factor(findInterval(mat[,,2], gBin), levels=1:nG), 
+                                                factor(findInterval(mat[,,3], bBin), levels=1:nB)))
+                rgb_feature <- as.numeric(freq_rgb$Freq)/(ncol(mat)*nrow(mat))
+                dat[i,] <- as.vector(rgb_feature)
+        }
+        
+        ### output constructed features
+        if(!is.null(data_name)){
+                save(dat, file=paste0("./output/feature_", data_name, ".RData"))
+        }
+        return(dat)
+}
+
+```
+
+Finally, we use the SVM method to construct a model to learn different features of cats and dogs. After the model is bulit, we can push the test images into it, and then we can get the predictions of whether the images are cats or dogs.
+
+```{r}
+
+# result
+svm_RBF = svm(train_feature,label_train,type = "C-classification",kernel = "radial",cost = 0.27,gamma = 0.001)
+predict = predict(svm_RBF,test_feature)
+error = sum(predict != label_test)/1377
+
+```
+
+
+---  
+# 2 - Advanced model
+
+In the advanced model, we want to go deeper into the recognition process. 
+
+
+
+
+
+
+
